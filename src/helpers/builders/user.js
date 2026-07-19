@@ -1,50 +1,34 @@
 import { faker } from '@faker-js/faker';
 export class UserBuilder {
     withEmail() {
-        this.email = faker.internet.email({ lastName: 'BIN', provider: 'robot.dev' });
+        // Генерирует уникальную строку из 8 маленьких букв/цифр
+        // Результат всегда безопасен: bin.x7y2mz91@robot.dev
+        const randomId = faker.string.alphanumeric({ length: 8, casing: 'lower' });
+        this.email = `bin.${randomId}@robot.dev`;
         return this;
     }
+
     withPassword(length = 10) {
-        this.password = faker.internet.password({ length: length });
+        // Заменяем internet.password на alphanumeric
+        // Пароль будет состоять только из латинских букв и цифр (без &, #, \, $, %)
+        this.password = faker.string.alphanumeric({ length: length });
         return this;
     }
 
-    withUsername(name) {
-        this.username = name ?? faker.person.fullName();
+    withUsername(nameOrOptions) {
+        if (typeof nameOrOptions === 'string') {
+            this.username = nameOrOptions;
+        } else {
+            this.username = faker.person.fullName(nameOrOptions);
+        }
         return this;
     }
+
     build() {
-        const result = structuredClone(this);
-        return result;
-
+        return {
+            ...(this.email && { email: this.email }),
+            ...(this.password && { password: this.password }),
+            ...(this.username && { username: this.username })
+        };
     }
 }
-// иммутабельность объект
-
-/* const user = new UserBuilder().withEmail().withPassword().withUsername().build();
--1 { этот объект } - this.
--2 { email = '1@robot.dev'}
-... build
-4 {красота}
-*/
-
-
-/*
-
-    let username = faker.person.fullName();
-    let email = faker.internet.email({ lastName: 'BIN', provider: 'robot.dev' });
-    let password = faker.internet.password() // '89G1wJuBLbGziIs'
-*/
-
-
-/*
-const obj = {
-isTrue () {
-console.log('0')
-}
-}
-
-obj.isTrue();
-
-
-*/

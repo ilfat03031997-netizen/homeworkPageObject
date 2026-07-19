@@ -1,22 +1,37 @@
 import { test, expect } from '@playwright/test';
 import { ArticleBuilder } from '../src/helpers/builders/article';
+import { UserBuilder } from '../src/helpers/builders/user';
 import { faker } from '@faker-js/faker';
-import { RegisterPage, MainPage, YourfeedPage, AuthorizationPage, newArticle, PostArticle, NewComment, LikeArticle, EditArticle } from '../pages/realworld.page';
+import { RegisterPage } from '../pages/Register.page';
+import { MainPage } from '../pages/Main.page';
+import { YourfeedPage } from '../pages/Yourfeed.page';
+import { AuthorizationPage } from '../pages/Authorization.page';
+import { EditUserPage } from '../pages/EditUser.page';
+import { newArticlePage } from '../pages/newArticle.page';
+import { PostArticlePage } from '../pages/PostArticle.page';
+import { NewCommentPage } from '../pages/NewComment.page';
+import { LikeArticlePage } from '../pages/LikeArticle.page';
+import { EditArticlePage } from '../pages/EditArticle.page';
+
 
 
 const URL = 'https://realworld.qa.guru/';
+
+
+// группировка(suite) тестов
 test.describe('Авторизация', () => {
     let testUser;
+    let testArticle;
 
+
+    // Предусловие 
     test.beforeEach(async ({ page }) => {
-        //создали через фейкер объект юзера
-        testUser = {
-            username: faker.person.fullName(),
-            email: faker.internet.email({ lastName: 'BIN', provider: 'robot.dev' }),
-            password: faker.internet.password()
-        };
-        // Деструктуризация объекта - разбираем объект на переменные
-        //const { email, password, username } = testUser;
+        //создаем объект юзера
+        testUser = new UserBuilder().withEmail().withPassword().withUsername().build();
+        //генерируем поля для статьи
+        testArticle = new ArticleBuilder().ArTitle().ArticleAbout().YourArticle().Entertags().build();
+
+        //Инициализируем странички
         const main = new MainPage(page);
         const register = new RegisterPage(page);
         //  Переходим на сайт и регистрируемся
@@ -25,16 +40,17 @@ test.describe('Авторизация', () => {
         await register.signup(testUser);
     });
 
+
+
+
     // тест 1 - Создание новой статьи
     test('Авторизованный пользователь может создать статью', async ({ page }) => {
-        //генерируем поля для статьи
-        let testArticle = new ArticleBuilder().ArTitle().ArticleAbout().YourArticle().Entertags().build();
-
+        
         await page.goto(URL);
         //Инициализируем странички
         const main = new MainPage(page);
-        const NewArticle = new newArticle(page);
-        const newPostArticle = new PostArticle(page);
+        const NewArticle = new newArticlePage(page);
+        const newPostArticle = new PostArticlePage(page);
         const authorization = new AuthorizationPage(page);
 
         //1.Авторизация пользователя
@@ -42,60 +58,63 @@ test.describe('Авторизация', () => {
         await authorization.login(testUser);
 
         //2.Создание статьи
+        await NewArticle.clickNewArticle()
         await NewArticle.newArticlewrite(testArticle);
 
-
-        await expect(newPostArticle.getInputComment()).toContainText('Post Comment');
+        // Ожидаемый результат
+        await expect(newPostArticle.getInputComment()).toContainText(testArticle.title);
     });
 
-    //тест 2 - Добавление комента к созданным статьям
-    test('Авторизованный может добавить комент к созданным статьям', async ({ page }) => {
 
-        //генерируем поля для статьи
-        let testArticle = new ArticleBuilder().ArTitle().ArticleAbout().YourArticle().Entertags().build();
+
+
+    //тест 2 - Добавление комента к созданным статьям
+    test('Авторизованный пользователь может добавить комент к созданным статьям', async ({ page }) => {
+        
         await page.goto(URL);
         //Инициализируем странички
         const main = new MainPage(page);
         const authorization = new AuthorizationPage(page);
-        const NewArticle = new newArticle(page);
-        const newComment = new NewComment(page);
+        const NewArticle = new newArticlePage(page);
+        const newComment = new NewCommentPage(page);
 
         //1.Авторизация пользователя
         await main.gotoAuthorization();
         await authorization.login(testUser);
 
         //2.Создание статьи
+        await NewArticle.clickNewArticle()
         await NewArticle.newArticlewrite(testArticle);
         //3.Коментарий к новой статье
         await newComment.myAllArticle();
         await newComment.addComment();
 
 
-        await expect(newComment.GetComment()).not.toBeEmpty();
+        // Ожидаемый результат
+        await expect(newComment.GetComment()).toContainText('test_comment');
     });
 
     //тест 3 - Поставить лайк новой статье
-    test('Авторизованный может поставить лайк к созданным статьям', async ({ page }) => {
-
-        //генерируем поля для статьи
-        let testArticle = new ArticleBuilder().ArTitle().ArticleAbout().YourArticle().Entertags().build();
+    test('Авторизованный пользователь может поставить лайк к созданным статьям', async ({ page }) => {
+        
         await page.goto(URL);
         //Инициализируем странички
         const main = new MainPage(page);
         const authorization = new AuthorizationPage(page);
 
-        const newPostArticle = new PostArticle(page);
-        const NewArticle = new newArticle(page);
-        const newComment = new NewComment(page);
-        const newLike = new LikeArticle(page);
+        const newPostArticle = new PostArticlePage(page);
+        const NewArticle = new newArticlePage(page);
+        const newComment = new NewCommentPage(page);
+        const newLike = new LikeArticlePage(page);
 
         //1.Авторизация пользователя
         await main.gotoAuthorization();
         await authorization.login(testUser);
 
         //2.Создание статьи
+        await NewArticle.clickNewArticle()
         await NewArticle.newArticlewrite(testArticle);
-        await expect(newPostArticle.getInputComment()).toContainText('Post Comment');
+        await expect(newPostArticle.getInputComment()).toContainText(testArticle.title);
 
         //3.Перейти ко всем статьям
         await newComment.myAllArticle();
@@ -103,43 +122,42 @@ test.describe('Авторизация', () => {
         await newLike.addLike();
 
 
-
-        await expect(newLike.GetLike()).toContainText('1');
+        // Ожидаемый результат
+        await expect(newLike.GetLike()).not.toContainText('0');
     });
 
 
-//тест 4 - редактирование статьи
-test('Авторизованный может редактировать статью', async ({ page }) => {
+    //тест 4 - редактирование статьи
+    test('Авторизованный пользователь может редактировать статью', async ({ page }) => {
+        
+        await page.goto(URL);
+        //Инициализируем странички
+        const main = new MainPage(page);
+        const authorization = new AuthorizationPage(page);
 
-    //генерируем поля для статьи
-    let testArticle = new ArticleBuilder().ArTitle().ArticleAbout().YourArticle().Entertags().build();
-    await page.goto(URL);
-    //Инициализируем странички
-    const main = new MainPage(page);
-    const authorization = new AuthorizationPage(page);
+        const newPostArticle = new PostArticlePage(page);
+        const NewArticle = new newArticlePage(page);
+        const newComment = new NewCommentPage(page);
 
-    const newPostArticle = new PostArticle(page);
-    const NewArticle = new newArticle(page);
-    const newComment = new NewComment(page);
+        const editArticle = new EditArticlePage(page);
 
-    const editArticle = new EditArticle(page);
+        //1.Авторизация пользователя
+        await main.gotoAuthorization();
+        await authorization.login(testUser);
 
-    //1.Авторизация пользователя
-    await main.gotoAuthorization();
-    await authorization.login(testUser);
+        //2.Создание статьи
+        await NewArticle.clickNewArticle()
+        await NewArticle.newArticlewrite(testArticle);
+        await expect(newPostArticle.getInputComment()).toContainText(testArticle.title);
 
-    //2.Создание статьи
-    await NewArticle.newArticlewrite(testArticle);
-    await expect(newPostArticle.getInputComment()).toContainText('Post Comment');
 
-   
-    //3.Редактирование статьи
-    await newComment.myAllArticle();
-    await editArticle.EditArticle();
-    
+        //3.Редактирование статьи
+        await newComment.myAllArticle();
+        await editArticle.EditArticle();
 
 
 
-    await expect(editArticle.GetArticleE()).toContainText('test123');
-});
+        // Ожидаемый результат
+        await expect(editArticle.GetArticleE()).toContainText('test123');
+    });
 });

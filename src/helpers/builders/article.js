@@ -18,11 +18,8 @@ export class ArticleBuilder {
         return this;
     }
     build() {
-        return {
-            title: this.title,
-            about: this.about,
-            YourArticle: this.YourArticle,
-            tags: this.Entertags 
-        };
+         const result = structuredClone(this);
+         return result;
+
     }
 }
