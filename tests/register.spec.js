@@ -11,6 +11,7 @@ import { NewCommentPage } from '../pages/NewComment.page';
 import { LikeArticlePage } from '../pages/LikeArticle.page';
 import { EditArticlePage } from '../pages/EditArticle.page';
 import { UserBuilder } from '../src/helpers/builders/user';
+import { EditUserBuilder } from '../src/helpers/builders/editUser';
 
 
 
@@ -20,12 +21,13 @@ const URL = 'https://realworld.qa.guru/';
 // группировка(suite) тестов
 test.describe('Регистрация', () => {
     let testUser;
-
+    let testEditUser
 
     // Предусловие 
     test.beforeEach(async ({ page }) => {
         // Генерируем тестового пользователя
         testUser = new UserBuilder().withEmail().withPassword().withUsername().build();
+        testEditUser = new EditUserBuilder().EdUser().build();
 
         //Инициализируем странички
         const main = new MainPage(page);
@@ -94,10 +96,10 @@ test.describe('Регистрация', () => {
         await authorization.login(testUser);
 
         //2.редактирование карточки пользователя
-        await editUser.EditSettings();
+        await editUser.EditSettings(testEditUser);
 
 
         // Ожидаемый результат
-        await expect(editUser.GetBio()).toContainText('test_bio');
+        await expect(editUser.GetBio()).toContainText(testEditUser.EditUser);
     });
 });

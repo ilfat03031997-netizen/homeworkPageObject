@@ -15,13 +15,14 @@ export class EditUserPage {
     }
 
     // Бизнес-сценарии на страничке
-    async EditSettings()
-    // ({email, password, username})
-    {
+    async EditSettings(testEditUser) {
+
+        const { EditUser } = testEditUser;
+
         await this.UserDropdown.click();
         await this.SettingsBut.click();
         await this.Shortbio.click();
-        await this.Shortbio.fill('test_bio');
+        await this.Shortbio.fill(EditUser);
         await this.UpdateSettingsB.click();    
     }
 

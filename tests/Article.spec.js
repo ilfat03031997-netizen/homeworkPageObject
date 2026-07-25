@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { ArticleBuilder } from '../src/helpers/builders/article';
 import { UserBuilder } from '../src/helpers/builders/user';
+import { CommentBuilder } from '../src/helpers/builders/comment';
+import { EditArticleBuilder } from '../src/helpers/builders/editArticle';
 import { faker } from '@faker-js/faker';
 import { RegisterPage } from '../pages/Register.page';
 import { MainPage } from '../pages/Main.page';
@@ -22,6 +24,8 @@ const URL = 'https://realworld.qa.guru/';
 test.describe('Авторизация', () => {
     let testUser;
     let testArticle;
+    let testComment
+    let EditArt
 
 
     // Предусловие 
@@ -30,6 +34,11 @@ test.describe('Авторизация', () => {
         testUser = new UserBuilder().withEmail().withPassword().withUsername().build();
         //генерируем поля для статьи
         testArticle = new ArticleBuilder().ArTitle().ArticleAbout().YourArticle().Entertags().build();
+        //генерируем поле для коммента
+        testComment = new CommentBuilder().Testcomment().build();
+        //генерируем поле для редактирования статьи
+        EditArt = new EditArticleBuilder().EdArticle().build();
+
 
         //Инициализируем странички
         const main = new MainPage(page);
@@ -87,11 +96,11 @@ test.describe('Авторизация', () => {
         await NewArticle.newArticlewrite(testArticle);
         //3.Коментарий к новой статье
         await newComment.myAllArticle();
-        await newComment.addComment();
+        await newComment.addComment(testComment);
 
 
         // Ожидаемый результат
-        await expect(newComment.GetComment()).toContainText('test_comment');
+        await expect(newComment.GetComment()).toContainText(testComment.comment);
     });
 
     //тест 3 - Поставить лайк новой статье
@@ -153,11 +162,11 @@ test.describe('Авторизация', () => {
 
         //3.Редактирование статьи
         await newComment.myAllArticle();
-        await editArticle.EditArticle();
+        await editArticle.EditArticle(EditArt);
 
 
 
         // Ожидаемый результат
-        await expect(editArticle.GetArticleE()).toContainText('test123');
+        await expect(editArticle.GetArticleE()).toContainText(EditArt.EditArticle);
     });
 });

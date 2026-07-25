@@ -12,16 +12,19 @@ export class EditArticlePage {
 
         this.buttonUpdate = page.getByRole('button', { name: 'Update Article' });
 
-        this.GetArticleEdit = page.getByText('test123', { exact: true });
+        this.GetArticleEdit = page.locator('p:visible');
     }
 
     // Бизнес-сценарии на страничке
-    async EditArticle() {
+    async EditArticle(EditArt) {
+
+        const { EditArticle } = EditArt;
+
         await this.ArticleFirst.click();
         await this.ButtonEdit.first().click();
 
         await this.EditArt.click();
-        await this.EditArt.fill('test123');
+        await this.EditArt.fill(EditArt.EditArticle);
 
         await this.buttonUpdate.click();
         
