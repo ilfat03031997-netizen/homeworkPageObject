@@ -15,13 +15,6 @@
     "token": "$TELEGRAM_BOT_TOKEN",
     "chat": "$TELEGRAM_CHAT_ID",
     "replyTo": ""
-  },
-  "proxy": {
-    "type": "socks5",
-    "host": "${PROXY_HOST}",
-    "port": 7777,
-    "username": "",
-    "password": ""
   }
 
 }
