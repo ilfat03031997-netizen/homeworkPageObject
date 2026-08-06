@@ -13,8 +13,8 @@
   },
   "telegram": {
     "token": "8401822024:AAE8rdJ8I_U8RiFLpNLhH2nMFc3_anMtwuw",
-    "chat": "$TELEGRAM_CHAT_ID",
-    "replyTo": "-5368686039"
+    "chat": "-5368686039",
+    "replyTo": ""
   }
 
 }
