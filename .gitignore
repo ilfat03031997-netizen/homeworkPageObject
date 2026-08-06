@@ -9,6 +9,8 @@ playwright-report/
 test-results/
 .playwright-browsers/
 
+allure-results
+
 # Окружение и секреты
 .env
 .env.local
@@ -23,3 +25,6 @@ Thumbs.db
 .idea/
 .vs/
 
+.prettierignore
+.prettierrc
+eslint.config.mjs
