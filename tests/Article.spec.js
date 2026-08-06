@@ -17,6 +17,8 @@ import { EditArticlePage } from '../pages/EditArticle.page';
 
 
 
+
+
 const URL = 'https://realworld.qa.guru/';
 
 
@@ -28,7 +30,7 @@ test.describe('Авторизация', () => {
     let EditArt
 
 
-    // Предусловие 
+    // Предусловие
     test.beforeEach(async ({ page }) => {
         //создаем объект юзера
         testUser = new UserBuilder().withEmail().withPassword().withUsername().build();
@@ -54,7 +56,7 @@ test.describe('Авторизация', () => {
 
     // тест 1 - Создание новой статьи
     test('Авторизованный пользователь может создать статью', async ({ page }) => {
-        
+
         await page.goto(URL);
         //Инициализируем странички
         const main = new MainPage(page);
@@ -79,7 +81,7 @@ test.describe('Авторизация', () => {
 
     //тест 2 - Добавление комента к созданным статьям
     test('Авторизованный пользователь может добавить комент к созданным статьям', async ({ page }) => {
-        
+
         await page.goto(URL);
         //Инициализируем странички
         const main = new MainPage(page);
@@ -105,7 +107,7 @@ test.describe('Авторизация', () => {
 
     //тест 3 - Поставить лайк новой статье
     test('Авторизованный пользователь может поставить лайк к созданным статьям', async ({ page }) => {
-        
+
         await page.goto(URL);
         //Инициализируем странички
         const main = new MainPage(page);
@@ -138,7 +140,7 @@ test.describe('Авторизация', () => {
 
     //тест 4 - редактирование статьи
     test('Авторизованный пользователь может редактировать статью', async ({ page }) => {
-        
+
         await page.goto(URL);
         //Инициализируем странички
         const main = new MainPage(page);
