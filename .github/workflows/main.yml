@@ -1,0 +1,29 @@
+# Коммент
+# Это Название пайплаина
+name: newautotest UI/API
+
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  #ручной запуск 
+  workflow_dispatch: 
+
+jobs:
+  homeworkPageObject:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout
+         uses: actions/checkout@v7.0.1
+        - name: Setup Node.js environment
+         uses: actions/setup-node@v7.0.0
+        - name: Установить пакет
+         run: npm ci
+        - name: Установить браузеры
+         run: npx playwright install --with-deps
+        - name: Запустить тесты
+         run: npm t
+         
