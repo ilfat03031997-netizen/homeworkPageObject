@@ -27,7 +27,8 @@ jobs:
       - name: Запустить тесты
         run: npm t
       - name: Генерируем отчет
-        run: npx allure awesome ./allure-result --single-file
+        run: npx allure awesome ./allure-results --single-file
+        run: npx allure awesome ./allure-results --single-file
         continue-on-error: true
         if: always()
       - name: Upload a Build Artifact
@@ -38,6 +39,11 @@ jobs:
           name: artefacts
           path: |
             allure-report/index.html
-            allure-result
+            allure-results
+            playwright-report
+
+
+
+            
             playwright-report
             
