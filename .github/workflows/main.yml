@@ -8,8 +8,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-
-  #ручной запуск 
+#ручной запуск 
   workflow_dispatch: 
 
 jobs:
