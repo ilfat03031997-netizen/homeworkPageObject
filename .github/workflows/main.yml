@@ -1,8 +1,6 @@
 # Коммент
 # Это Название пайплаина
 name: newautotest UI/API
-
-
 on:
   push:
     branches: [ main ]
@@ -33,7 +31,7 @@ jobs:
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v7.0.1
         continue-on-error: true
-        if: always()          
+        if: always()
         with: 
           name: artefacts
           path: |
