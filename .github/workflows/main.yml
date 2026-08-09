@@ -1,5 +1,7 @@
 # Коммент
 # Это Название пайплаина
+# ${{secrets.HARDCODEUSERPASSWD}}
+# ${{vars.BACK_URL}}
 name: newautotest UI/API
 on:
   push:
@@ -24,6 +26,9 @@ jobs:
         run: npx playwright install --with-deps
       - name: Запустить тесты
         run: npm t
+        env: 
+          MY_PASS: ${{secrets.HARDCODEUSERPASSWD}}
+          BACK_API_URL: ${{vars.BACK_URL}}
       - name: Генерируем отчет
         run: npx allure awesome ./allure-results --single-file
         continue-on-error: true
