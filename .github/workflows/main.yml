@@ -41,16 +41,23 @@ jobs:
         if: always()
         run: allurectl upload allure-results
 
-        # 2. Получаем URL последнего запуска через API
+        
+       # 2. Получаем URL последнего запуска через API
       - name: Get latest launch URL
         id: launch_url
         if: always()
         run: |
-          # Делаем запрос к API
-          RESPONSE=$(curl -s -H "Authorization: Api-Token ${{ secrets.ALLURE_TOKEN }}" \
+          # Ждем 5 секунд, чтобы запуск точно отобразился в API
+          sleep 5
+          
+          # Делаем запрос к API с правильным токеном Allure TestOps
+          RESPONSE=$(curl -s -H "X-TestOps-Api-Token: ${{ secrets.ALLURE_TOKEN }}" \
             "https://allure.qa.guru/api/rs/project/${{ vars.ALLURE_PROJECT_ID }}/launch?page=0&size=1&sort=createdDate,desc")
           
-          # Достаем ID запуска. Оператор // empty предотвращает ошибки, если поля нет
+          # Выводим ответ для отладки в логи (потом можно удалить)
+          echo "API Response: $RESPONSE"
+          
+          # Достаем ID запуска
           LAUNCH_ID=$(echo "$RESPONSE" | jq -r '.content[0].id // empty')
           
           # Формируем итоговую ссылку
