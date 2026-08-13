@@ -41,36 +41,18 @@ jobs:
         if: always()
         run: allurectl upload allure-results
 
+      - name: Get job run ID from allurectl
+        id: allure_job
+        if: always()
+        run: |
+          export $(allurectl job-run env)
+          echo "ALLURE_JOB_RUN_ID=$ALLURE_JOB_RUN_ID" >> $GITHUB_OUTPUT
+          echo "ALLURE_LAUNCH_ID=$ALLURE_LAUNCH_ID" >> $GITHUB_OUTPUT
+
       - name: Генерируем отчет для телеграмм 
         if: always()
         run: npx allure-commandline generate allure-results -o allure-report --clean
         continue-on-error: true
-      # 2. Получаем URL последнего запуска через API
-      - name: Get latest launch URL
-        id: launch_url
-        if: always()
-        run: |
-    
-         # Получаем последний запуск через API (эндпоинт /latest)
-         RESPONSE=$(curl -s \
-           -H "Accept: application/json" \
-           -H "X-TestOps-Api-Token: ${{ secrets.ALLURE_TOKEN }}" \
-           "https://allure.qa.guru/api/launch/latest?projectId=${{ vars.ALLURE_PROJECT_ID }}")
-
-      
-
-         LAUNCH_ID=$(echo "$RESPONSE" | jq -r '.id')
-
-         if [ -z "$LAUNCH_ID" ] || [ "$LAUNCH_ID" = "null" ]; then
-           echo "⚠️ Запуск не найден, используем ссылку на проект"
-           LAUNCH_URL="https://allure.qa.guru/project/${{ vars.ALLURE_PROJECT_ID }}/launches"
-         else
-         # Формируем ссылку на jobrun (если не работает, попробуйте /launch/)
-           LAUNCH_URL="https://allure.qa.guru/jobrun/$LAUNCH_ID"
-           echo "✅ Найден запуск: $LAUNCH_ID"
-         fi
-
-         echo "launch_url=$LAUNCH_URL" >> $GITHUB_OUTPUT  
         
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v4
@@ -96,7 +78,7 @@ jobs:
         env:
            TELEGRAM_BOT_TOKEN: ${{secrets.TELEGRAM_BOT_TOKEN}}
            TELEGRAM_CHAT_ID: ${{secrets.TELEGRAM_CHAT_ID}}
-           REPORT_URL: ${{steps.launch_url.outputs.launch_url}}
+           REPORT_URL: "https://allure.qa.guru/jobrun/${{ steps.allure_job.outputs.ALLURE_JOB_RUN_ID }}"
            BUILD_URL: ${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}
         run: |
           # Подставляем реальные значения в файл конфигурации
