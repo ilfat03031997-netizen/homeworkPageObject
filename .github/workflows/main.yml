@@ -80,9 +80,9 @@ jobs:
       - name: Отправить уведомление в Telegram
         run: java "-DconfigFile=notification/telegram.json" -jar notification/allure-notifications-5.0.8.jar
         env:
-           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-           REPORT_URL: ${{ steps.launch_url.outputs.launch_url }}
-           BUILD_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+           TELEGRAM_BOT_TOKEN: ${{secrets.TELEGRAM_BOT_TOKEN}}
+           TELEGRAM_CHAT_ID: ${{secrets.TELEGRAM_CHAT_ID}}
+           REPORT_URL: ${{steps.launch_url.outputs.launch_url}}
+           BUILD_URL: ${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}
         if: always()  
         
