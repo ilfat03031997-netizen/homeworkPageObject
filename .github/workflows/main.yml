@@ -54,7 +54,9 @@ jobs:
           sleep 5
           
           # Делаем запрос к API с правильным токеном Allure TestOps
-          RESPONSE=$(curl -s -H "X-TestOps-Api-Token: ${{ secrets.ALLURE_TOKEN }}" \
+          RESPONSE=$(curl -s \
+            -H "Accept: application/json" \
+            -H "X-TestOps-Api-Token: ${{ secrets.ALLURE_TOKEN }}" \
             "https://allure.qa.guru/project/${{ vars.ALLURE_PROJECT_ID }}/launches?page=0&size=1&sort=createdDate,desc")
           
           # Выводим ответ для отладки в логи (потом можно удалить)
