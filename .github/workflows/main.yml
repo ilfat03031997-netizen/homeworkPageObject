@@ -27,7 +27,7 @@ jobs:
       - name: Setup AllureCTL
         uses: allure-framework/setup-allurectl@v1
         with:
-          allure-endpoint: https://allure.autotests.cloud
+          allure-endpoint: https://allure.qa.guru
           allure-token: ${{ secrets.ALLURE_TOKEN }}
           allure-project-id: ${{ vars.ALLURE_PROJECT_ID }}  
       - name: Запустить тесты
@@ -42,13 +42,13 @@ jobs:
         run: |
           # Получаем ID последнего запуска через API
           LAUNCH_ID=$(curl -s -H "Authorization: Api-Token ${{ secrets.ALLURE_TOKEN }}" \
-            "https://allure.autotests.cloud/api/rs/project/${{ vars.ALLURE_PROJECT_ID }}/launch?page=0&size=1&sort=createdDate,desc" \
+            "https://allure.qa.guru/api/rs/project/${{ vars.ALLURE_PROJECT_ID }}/launch?page=0&size=1&sort=createdDate,desc" \
             | jq -r '.content[0].id')
     
           if [ -z "$LAUNCH_ID" ]; then
-            LAUNCH_URL="https://allure.autotests.cloud/project/${{ vars.ALLURE_PROJECT_ID }}"
+            LAUNCH_URL="https://allure.qa.guru/project${{ vars.ALLURE_PROJECT_ID }}"
           else
-            LAUNCH_URL="https://allure.autotests.cloud/launch/$LAUNCH_ID"
+            LAUNCH_URL="https://allure.qa.guru/project//launch/$LAUNCH_ID"
           fi
     
           echo "launch_url=$LAUNCH_URL" >> $GITHUB_OUTPUT
@@ -70,15 +70,15 @@ jobs:
             playwright-report
             allure-report-single
 
-      - name: Setup Java (требуется для запуска .jar)
-        uses: actions/setup-java@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '17'
         if: always()
       
       - name: Отправить уведомление в Telegram
-        run: java "-DconfigFile=notifications/config.json" -jar notifications/allure-notifications.jar
+        run: java "-DconfigFile=notification/telegram.json" -jar notification/allure-notifications-5.0.8.jar
         env:
            TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
            TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
