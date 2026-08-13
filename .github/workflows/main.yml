@@ -60,7 +60,7 @@ jobs:
             "https://allure.qa.guru/api/launch?search=&projectId=${{ vars.ALLURE_PROJECT_ID }}&page=0&size=25&preview=true")
           
           # Извлекаем ID самого первого (последнего созданного) запуска из массива content
-          LAUNCH_ID=$(echo "$RESPONSE" | jq '.content[0].id')
+          LAUNCH_ID=$(echo "$RESPONSE" | jq -r '.content[0].id')
           
           # Выводим результат
           echo "LAUNCH_ID=$LAUNCH_ID"
