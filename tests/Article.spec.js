@@ -40,9 +40,7 @@ test.describe('Авторизация', () => {
         testComment = new CommentBuilder().Testcomment().build();
         //генерируем поле для редактирования статьи
         EditArt = new EditArticleBuilder().EdArticle().build();
-
-        console.log('Это мои переменные')
-        console.log(process.env)
+        
 
         //Инициализируем странички
         const main = new MainPage(page);
