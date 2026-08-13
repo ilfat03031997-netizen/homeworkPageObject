@@ -36,25 +36,41 @@ jobs:
           BACK_URL_API: ${{vars.BACK_URL_API}}
           BACK_URL: ${{vars.BACK_URL}}
           
+      # 1. Загружаем результаты в Allure TestOps
       - name: Upload results to Allure TestOps
-        id: launch_url 
+        if: always()
+        run: allurectl upload allure-results
+        
+      # 2. Получаем URL последнего запуска через API
+      - name: Get latest launch URL
+        id: launch_url
         if: always()
         run: |
-          # Получаем ID последнего запуска через API
-          LAUNCH_ID=$(curl -s -H "Authorization: Api-Token ${{ secrets.ALLURE_TOKEN }}" \
-            "https://allure.qa.guru/api/rs/project/${{ vars.ALLURE_PROJECT_ID }}/launch?page=0&size=1&sort=createdDate,desc" \
-            | jq -r '.content[0].id')
-    
-          if [ -z "$LAUNCH_ID" ]; then
-            LAUNCH_URL="https://allure.qa.guru/project${{ vars.ALLURE_PROJECT_ID }}"
+          RESPONSE=$(curl -sS -w "\n%{http_code}" \
+            -H "Authorization: Api-Token ${{ secrets.ALLURE_TOKEN }}" \
+            -H "Accept: application/json" \
+            "https://allure.qa.guru/api/rs/project/${{ vars.ALLURE_PROJECT_ID }}/launch?page=0&size=1&sort=createdDate,desc")
+          
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "API error: $HTTP_CODE"
+            LAUNCH_URL="https://allure.qa.guru/project/${{ vars.ALLURE_PROJECT_ID }}"
           else
-            LAUNCH_URL="https://allure.qa.guru/project//launch/$LAUNCH_ID"
+            LAUNCH_ID=$(echo "$BODY" | jq -r '.content[0].id // empty')
+            if [ -z "$LAUNCH_ID" ] || [ "$LAUNCH_ID" = "null" ]; then
+              LAUNCH_URL="https://allure.qa.guru/project/${{ vars.ALLURE_PROJECT_ID }}"
+            else
+              # Попробуем прямой формат
+              LAUNCH_URL="https://allure.qa.guru/launch/$LAUNCH_ID"
+            fi
           fi
-    
+          
           echo "launch_url=$LAUNCH_URL" >> $GITHUB_OUTPUT
         
       - name: Генерируем отчет для телеграмм 
-        run: npx allure awesome ./allure-results
+        run: npx allure awesome ./allure-results --clean
         continue-on-error: true
         if: always()
         
