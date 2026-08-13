@@ -15,7 +15,7 @@
        "report": "${REPORT_URL}",
        "build": "${BUILD_URL}"
     },
-    "enableSuitesPublishing": true,
+    "enableSuitesPublishing": false,
     "customData": {}
   },
   "telegram": {
