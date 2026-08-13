@@ -50,31 +50,27 @@ jobs:
         id: launch_url
         if: always()
         run: |
-          # Ждем 5 секунд, чтобы запуск точно отобразился в API
-          sleep 5
-          
-          # Делаем запрос к API с правильным токеном Allure TestOps
-          RESPONSE=$(curl -s \
-            -H "Accept: application/json" \
-            -H "X-TestOps-Api-Token: ${{ secrets.ALLURE_TOKEN }}" \
-            "https://allure.qa.guru/api/launch?search=&projectId=${{ vars.ALLURE_PROJECT_ID }}&page=0&size=25&preview=true")
-          
-          # Извлекаем ID самого первого (последнего созданного) запуска из массива content
-          LAUNCH_ID=$(echo "$RESPONSE" | jq -r '.content[0].id')
-          
-          # Выводим результат
-          echo "LAUNCH_ID=$LAUNCH_ID"
-          
-          # Формируем итоговую ссылку
-          if [ -z "$LAUNCH_ID" ] || [ "$LAUNCH_ID" = "null" ]; then
-            echo "Запуск не найден, используем ссылку на проект"
-            LAUNCH_URL="https://allure.qa.guru/project/${{ vars.ALLURE_PROJECT_ID }}/launches"
-          else
-            LAUNCH_URL="https://allure.qa.guru/launch/$LAUNCH_ID"
-          fi
-          
-          # Сохраняем ссылку для следующих шагов
-          echo "launch_url=$LAUNCH_URL" >> $GITHUB_OUTPUT  
+    
+         # Получаем последний запуск через API (эндпоинт /latest)
+         RESPONSE=$(curl -s \
+           -H "Accept: application/json" \
+           -H "X-TestOps-Api-Token: ${{ secrets.ALLURE_TOKEN }}" \
+           "https://allure.qa.guru/api/launch/latest?projectId=${{ vars.ALLURE_PROJECT_ID }}")
+
+      
+
+         LAUNCH_ID=$(echo "$RESPONSE" | jq -r '.id')
+
+         if [ -z "$LAUNCH_ID" ] || [ "$LAUNCH_ID" = "null" ]; then
+           echo "⚠️ Запуск не найден, используем ссылку на проект"
+           LAUNCH_URL="https://allure.qa.guru/project/${{ vars.ALLURE_PROJECT_ID }}/launches"
+         else
+         # Формируем ссылку на jobrun (если не работает, попробуйте /launch/)
+           LAUNCH_URL="https://allure.qa.guru/jobrun/$LAUNCH_ID"
+           echo "✅ Найден запуск: $LAUNCH_ID"
+         fi
+
+         echo "launch_url=$LAUNCH_URL" >> $GITHUB_OUTPUT  
         
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v4
