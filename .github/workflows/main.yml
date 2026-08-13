@@ -57,18 +57,18 @@ jobs:
           RESPONSE=$(curl -s \
             -H "Accept: application/json" \
             -H "X-TestOps-Api-Token: ${{ secrets.ALLURE_TOKEN }}" \
-            "https://allure.qa.guru/project/${{ vars.ALLURE_PROJECT_ID }}/launches?page=0&size=1&sort=createdDate,desc")
+            "https://allure.qa.guru/api/launch?search=&projectId=${{ vars.ALLURE_PROJECT_ID }}&page=0&size=25&preview=true")
           
-          # Выводим ответ для отладки в логи (потом можно удалить)
-          echo "API Response: $RESPONSE"
+          # Извлекаем ID самого первого (последнего созданного) запуска из массива content
+          LAUNCH_ID=$(echo "$RESPONSE" | jq '.content[0].id')
           
-          # Достаем ID запуска
-          LAUNCH_ID=$(echo "$RESPONSE" | jq -r '.content[0].id // empty')
+          # Выводим результат
+          echo "LAUNCH_ID=$LAUNCH_ID"
           
           # Формируем итоговую ссылку
           if [ -z "$LAUNCH_ID" ] || [ "$LAUNCH_ID" = "null" ]; then
             echo "Запуск не найден, используем ссылку на проект"
-            LAUNCH_URL="https://allure.qa.guru/project/${{ vars.ALLURE_PROJECT_ID }}"
+            LAUNCH_URL="https://allure.qa.guru/project/${{ vars.ALLURE_PROJECT_ID }}/launches"
           else
             LAUNCH_URL="https://allure.qa.guru/launch/$LAUNCH_ID"
           fi
