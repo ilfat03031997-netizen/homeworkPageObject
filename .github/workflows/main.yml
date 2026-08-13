@@ -98,6 +98,11 @@ jobs:
            TELEGRAM_CHAT_ID: ${{secrets.TELEGRAM_CHAT_ID}}
            REPORT_URL: ${{steps.launch_url.outputs.launch_url}}
            BUILD_URL: ${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}
-        run: java "-DconfigFile=notification/telegram.json" -jar notification/allure-notifications-5.0.8.jar
+        run: |
+          # Подставляем реальные значения в файл конфигурации
+          envsubst < notification/telegram.json > notification/telegram_ready.json
+          
+          # Запускаем отправку с новым файлом
+          java "-DconfigFile=notification/telegram_ready.json" -jar notification/allure-notifications-5.0.8.jar
         
       
