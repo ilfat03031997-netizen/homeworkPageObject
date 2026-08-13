@@ -84,7 +84,7 @@ jobs:
             allure-report-single
 
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
