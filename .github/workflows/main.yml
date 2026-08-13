@@ -68,7 +68,7 @@ jobs:
       - name: Генерируем отчет для телеграмм
         if: always()
         continue-on-error: true
-        run: npx allure generate ./allure-results --clean # Заменил awesome на generate
+        run: npx allure generate ./allure-results --clean
         
       - name: Upload a Build Artifact
         if: always()
