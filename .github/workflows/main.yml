@@ -41,8 +41,11 @@ jobs:
         if: always()
         run: allurectl upload allure-results
 
-        
-       # 2. Получаем URL последнего запуска через API
+      - name: Генерируем отчет для телеграмм 
+        if: always()
+        run: npx allure-commandline generate allure-results -o allure-report --clean
+        continue-on-error: true
+      # 2. Получаем URL последнего запуска через API
       - name: Get latest launch URL
         id: launch_url
         if: always()
@@ -52,7 +55,7 @@ jobs:
           
           # Делаем запрос к API с правильным токеном Allure TestOps
           RESPONSE=$(curl -s -H "X-TestOps-Api-Token: ${{ secrets.ALLURE_TOKEN }}" \
-            "https://allure.qa.guru/api/rs/project/${{ vars.ALLURE_PROJECT_ID }}/launch?page=0&size=1&sort=createdDate,desc")
+            "https://allure.qa.guru/project/${{ vars.ALLURE_PROJECT_ID }}/launches?page=0&size=1&sort=createdDate,desc")
           
           # Выводим ответ для отладки в логи (потом можно удалить)
           echo "API Response: $RESPONSE"
@@ -69,14 +72,7 @@ jobs:
           fi
           
           # Сохраняем ссылку для следующих шагов
-          echo "launch_url=$LAUNCH_URL" >> $GITHUB_OUTPUT
-      
-        
-      - name: Генерируем отчет для телеграмм 
-        if: always()
-        run: npx allure-commandline generate allure-results -o allure-report --clean
-        continue-on-error: true
-        
+          echo "launch_url=$LAUNCH_URL" >> $GITHUB_OUTPUT  
         
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v4
@@ -95,8 +91,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
-       
+          java-version: '17' 
       
       - name: Отправить уведомление в Telegram
         if: always()
