@@ -1,15 +1,9 @@
-# Коммент
-# Это Название пайплаина
-# ${{secrets.HARDCODEUSERPASSWD}}
-# ${{vars.BACK_URL}}
 name: newautotest UI/API
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-
-#ручной запуск 
   workflow_dispatch: 
 
 jobs:
@@ -17,31 +11,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@v4
+        
       - name: Setup Node.js environment
-        uses: actions/setup-node@v7.0.0
+        uses: actions/setup-node@v4
+        
       - name: Установить пакет
         run: npm ci
+        
       - name: Установить браузеры
         run: npx playwright install --with-deps
+        
       - name: Setup AllureCTL
         uses: allure-framework/setup-allurectl@v1
         with:
           allure-endpoint: https://allure.qa.guru
           allure-token: ${{ secrets.ALLURE_TOKEN }}
           allure-project-id: ${{ vars.ALLURE_PROJECT_ID }}  
+        
       - name: Запустить тесты
         run: npm t
         env: 
-          BACK_URL_API: ${{vars.BACK_URL_API}}
-          BACK_URL: ${{vars.BACK_URL}}
+          BACK_URL_API: ${{ vars.BACK_URL_API }}
+          BACK_URL: ${{ vars.BACK_URL }}
           
-      # 1. Загружаем результаты в Allure TestOps
       - name: Upload results to Allure TestOps
         if: always()
         run: allurectl upload allure-results
         
-      # 2. Получаем URL последнего запуска через API
       - name: Get latest launch URL
         id: launch_url
         if: always()
@@ -62,22 +59,21 @@ jobs:
             if [ -z "$LAUNCH_ID" ] || [ "$LAUNCH_ID" = "null" ]; then
               LAUNCH_URL="https://allure.qa.guru/project/${{ vars.ALLURE_PROJECT_ID }}"
             else
-              # Попробуем прямой формат
               LAUNCH_URL="https://allure.qa.guru/launch/$LAUNCH_ID"
             fi
           fi
           
           echo "launch_url=$LAUNCH_URL" >> $GITHUB_OUTPUT
         
-      - name: Генерируем отчет для телеграмм 
-        run: npx allure awesome ./allure-results --clean
-        continue-on-error: true
+      - name: Генерируем отчет для телеграмм
         if: always()
+        continue-on-error: true
+        run: npx allure generate ./allure-results --clean # Заменил awesome на generate
         
       - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v7.0.1
-        continue-on-error: true
         if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
         with: 
           name: artefacts
           path: |
@@ -87,18 +83,17 @@ jobs:
             allure-report-single
 
       - name: Set up JDK
-        uses: actions/setup-java@v5
+        if: always()
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-        if: always()
       
       - name: Отправить уведомление в Telegram
+        if: always()
         run: java "-DconfigFile=notification/telegram.json" -jar notification/allure-notifications-5.0.8.jar
         env:
-           TELEGRAM_BOT_TOKEN: ${{secrets.TELEGRAM_BOT_TOKEN}}
-           TELEGRAM_CHAT_ID: ${{secrets.TELEGRAM_CHAT_ID}}
-           REPORT_URL: ${{steps.launch_url.outputs.launch_url}}
-           BUILD_URL: ${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}
-        if: always()  
-        
+           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+           REPORT_URL: ${{ steps.launch_url.outputs.launch_url }}
+           BUILD_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
