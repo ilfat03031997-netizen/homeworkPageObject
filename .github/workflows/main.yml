@@ -24,15 +24,40 @@ jobs:
         run: npm ci
       - name: Установить браузеры
         run: npx playwright install --with-deps
+      - name: Setup AllureCTL
+        uses: allure-framework/setup-allurectl@v1
+        with:
+          allure-endpoint: https://allure.autotests.cloud
+          allure-token: ${{ secrets.ALLURE_TOKEN }}
+          allure-project-id: ${{ vars.ALLURE_PROJECT_ID }}  
       - name: Запустить тесты
         run: npm t
         env: 
-          MY_PASS: ${{secrets.HARDCODEUSERPASSWD}}
-          BACK_API_URL: ${{vars.BACK_URL}}
-      - name: Генерируем отчет
-        run: npx allure awesome ./allure-results --single-file
+          BACK_URL_API: ${{vars.BACK_URL_API}}
+          BACK_URL: ${{vars.BACK_URL}}
+          
+      - name: Upload results to Allure TestOps
+        id: launch_url 
+        if: always()
+        run: |
+          # Получаем ID последнего запуска через API
+          LAUNCH_ID=$(curl -s -H "Authorization: Api-Token ${{ secrets.ALLURE_TOKEN }}" \
+            "https://allure.autotests.cloud/api/rs/project/${{ vars.ALLURE_PROJECT_ID }}/launch?page=0&size=1&sort=createdDate,desc" \
+            | jq -r '.content[0].id')
+    
+          if [ -z "$LAUNCH_ID" ]; then
+            LAUNCH_URL="https://allure.autotests.cloud/project/${{ vars.ALLURE_PROJECT_ID }}"
+          else
+            LAUNCH_URL="https://allure.autotests.cloud/launch/$LAUNCH_ID"
+          fi
+    
+          echo "launch_url=$LAUNCH_URL" >> $GITHUB_OUTPUT
+        
+      - name: Генерируем отчет для телеграмм 
+        run: npx allure awesome ./allure-results
         continue-on-error: true
         if: always()
+        
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v7.0.1
         continue-on-error: true
@@ -43,3 +68,21 @@ jobs:
             allure-report/index.html
             allure-results
             playwright-report
+            allure-report-single
+
+      - name: Setup Java (требуется для запуска .jar)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+        if: always()
+      
+      - name: Отправить уведомление в Telegram
+        run: java "-DconfigFile=notifications/config.json" -jar notifications/allure-notifications.jar
+        env:
+           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+           REPORT_URL: ${{ steps.launch_url.outputs.launch_url }}
+           BUILD_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        if: always()  
+        
