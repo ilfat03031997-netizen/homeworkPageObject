@@ -1,8 +1,8 @@
 # Коммент
+name: newautotest UI/API
 # Это Название пайплаина
 # ${{secrets.HARDCODEUSERPASSWD}}
 # ${{vars.BACK_URL}}
-name: newautotest UI/API
 on:
   push:
     branches: [ main ]
@@ -17,15 +17,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@v7.0.0
       - name: Setup Node.js environment
-        uses: actions/setup-node@v7.0.0
+        uses: actions/setup-node@v6.4.0
       - name: Установить пакет
         run: npm ci
       - name: Установить браузеры
         run: npx playwright install --with-deps
       - name: Setup AllureCTL
-        uses: allure-framework/setup-allurectl@v1
+        uses:  allure-framework/setup-allurectl@v1
         with:
           allure-endpoint: https://allure.qa.guru
           allure-token: ${{ secrets.ALLURE_TOKEN }}
@@ -67,7 +67,7 @@ jobs:
         
       - name: Генерируем отчет для телеграмм 
         if: always()
-        run: npx allure-commandline generate ./allure-results --clean
+        run: npx allure-commandline generate allure-results -o allure-report --clean
         continue-on-error: true
         
         
@@ -82,7 +82,6 @@ jobs:
             allure-results
             playwright-report
             allure-report-single
-
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
