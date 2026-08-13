@@ -8,7 +8,14 @@
     "language": "ru",
     "allureFolder": "allure-report",
     "enableChart": true,
-    "enableSuitesPublishing": false,
+    "chart": {
+       "mode": "pie"
+    },
+    "links": {
+       "report": "${REPORT_URL}",
+       "build": "${BUILD_URL}"
+    },
+    "enableSuitesPublishing": true,
     "customData": {}
   },
   "telegram": {
